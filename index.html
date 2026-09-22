@@ -17,86 +17,58 @@
       align-items: center;
       justify-content: space-between;
       min-height: 100vh;
-      padding: 20px;
+      padding: 15px;
       user-select: none;
     }
 
     header {
-      margin-top: 10px;
+      margin-top: 5px;
       text-align: center;
       width: 100%;
       max-width: 400px;
     }
-    header h1 { font-size: 1.4rem; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
-
-    /* Tuning Selector Dropdown */
-    .tuning-selector {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    .tuning-selector select {
-      width: 100%;
-      padding: 12px 15px;
-      font-size: 1rem;
-      font-weight: bold;
-      background-color: #1a1a1a;
-      color: #00ff6b;
-      border: 2px solid #333;
-      border-radius: 12px;
-      outline: none;
-      cursor: pointer;
-      text-align: center;
-      appearance: none;
-      -webkit-appearance: none;
-    }
-
-    .tuning-selector select:focus {
-      border-color: #00ff6b;
-    }
+    header h1 { font-size: 1.2rem; color: #888; text-transform: uppercase; letter-spacing: 2px; }
 
     .tuner-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       width: 100%;
       max-width: 400px;
     }
 
     .note-display {
-      font-size: 5.5rem;
+      font-size: 4.5rem;
       font-weight: bold;
-      height: 110px;
-      line-height: 110px;
+      height: 90px;
+      line-height: 90px;
       color: #333;
       transition: color 0.2s ease;
     }
 
     .frequency-display {
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: #666;
-      margin-top: 5px;
-      height: 25px;
+      height: 20px;
     }
 
     /* Gauge / Meter Visual */
     .meter {
       position: relative;
       width: 100%;
-      height: 10px;
+      height: 8px;
       background-color: #222;
-      border-radius: 5px;
-      margin: 30px 0 20px 0;
+      border-radius: 4px;
+      margin: 15px 0 10px 0;
       overflow: visible;
     }
 
     .meter-center {
       position: absolute;
       left: 50%;
-      top: -5px;
+      top: -4px;
       width: 2px;
-      height: 20px;
+      height: 16px;
       background-color: #00ff6b;
       transform: translateX(-50%);
     }
@@ -104,11 +76,11 @@
     .meter-pointer {
       position: absolute;
       left: 50%;
-      top: -8px;
-      width: 16px;
-      height: 26px;
+      top: -6px;
+      width: 14px;
+      height: 20px;
       background-color: #888;
-      border-radius: 4px;
+      border-radius: 3px;
       transform: translateX(-50%);
       transition: left 0.1s ease-out, background-color 0.2s;
     }
@@ -122,35 +94,57 @@
     .meter-pointer.flat { background-color: #ff3b30; }
     .meter-pointer.sharp { background-color: #ffcc00; }
 
-    /* Dynamic String Buttons */
-    .string-reference {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
+    /* Visual Classical Headstock Container */
+    .headstock-wrapper {
       width: 100%;
-      margin-top: 15px;
-      flex-wrap: wrap;
+      max-width: 260px;
+      margin: 10px 0;
     }
 
-    .string-btn {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      border: 2px solid #333;
-      background: #1a1a1a;
-      color: #888;
+    svg.headstock {
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.5));
+    }
+
+    /* Interactive Peg Elements */
+    .peg-group {
+      cursor: pointer;
+    }
+
+    .peg-body {
+      fill: #222;
+      stroke: #555;
+      stroke-width: 2;
+      transition: all 0.2s;
+    }
+
+    .peg-text {
+      font-size: 11px;
       font-weight: bold;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
+      fill: #888;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
     }
 
-    .string-btn.active {
-      border-color: #00ff6b;
-      color: #00ff6b;
-      box-shadow: 0 0 10px rgba(0, 255, 107, 0.4);
+    .string-line {
+      stroke: #555;
+      stroke-width: 2;
+      transition: stroke 0.2s, stroke-width 0.2s;
+    }
+
+    /* Active dynamic state styles */
+    .peg-group.active .peg-body {
+      fill: #00ff6b;
+      stroke: #00ff6b;
+    }
+    .peg-group.active .peg-text {
+      fill: #000;
+    }
+    .string-line.active {
+      stroke: #00ff6b;
+      stroke-width: 3.5;
     }
 
     /* Control Button */
@@ -158,12 +152,12 @@
       background-color: #00ff6b;
       color: #000;
       border: none;
-      padding: 15px 40px;
-      font-size: 1.2rem;
+      padding: 12px 35px;
+      font-size: 1.1rem;
       font-weight: bold;
       border-radius: 30px;
       cursor: pointer;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       box-shadow: 0 4px 15px rgba(0, 255, 107, 0.3);
       transition: transform 0.1s;
     }
@@ -177,14 +171,6 @@
 
   <header>
     <h1>String Theory Tuner</h1>
-    <div class="tuning-selector">
-      <select id="tuning-select">
-        <option value="guitar-std">Guitar: Standard (E A D G B E)</option>
-        <option value="guitar-dropd">Guitar: Drop D (D A D G B E)</option>
-        <option value="bass-std">Bass: Standard (E A D G)</option>
-        <option value="ukulele-std">Ukulele: Standard (G C E A)</option>
-      </select>
-    </div>
   </header>
 
   <div class="tuner-container">
@@ -196,8 +182,55 @@
       <div id="pointer" class="meter-pointer"></div>
     </div>
 
-    <div id="string-container" class="string-reference">
-      <!-- Buttons are generated dynamically based on selected instrument -->
+    <!-- Classical Guitar Headstock Visual -->
+    <div class="headstock-wrapper">
+      <svg class="headstock" viewBox="0 0 200 280">
+        <!-- Wooden Headstock Outline -->
+        <path d="M 40 280 L 40 90 C 40 40, 60 10, 100 10 C 140 10, 160 40, 160 90 L 160 280 Z" fill="#2d1d18" stroke="#4a2e24" stroke-width="4"/>
+        
+        <!-- Slotted Openings (Classical Guitar Style) -->
+        <rect x="52" y="50" width="28" height="150" rx="14" fill="#121212" stroke="#1f1411" stroke-width="2"/>
+        <rect x="120" y="50" width="28" height="150" rx="14" fill="#121212" stroke="#1f1411" stroke-width="2"/>
+
+        <!-- Bone Nut at the base -->
+        <rect x="36" y="270" width="128" height="10" rx="2" fill="#e6dfcc"/>
+
+        <!-- Strings (E2, A2, D3, G3, B3, E4) -->
+        <line id="str-E2" class="string-line" x1="60" y1="170" x2="50" y2="270" />
+        <line id="str-A2" class="string-line" x1="60" y1="110" x2="66" y2="270" />
+        <line id="str-D3" class="string-line" x1="60" y1="65"  x2="82" y2="270" />
+        <line id="str-G3" class="string-line" x1="140" y1="65"  x2="118" y2="270" />
+        <line id="str-B3" class="string-line" x1="140" y1="110" x2="134" y2="270" />
+        <line id="str-E4" class="string-line" x1="140" y1="170" x2="150" y2="270" />
+
+        <!-- Left Pegs (E2, A2, D3) -->
+        <g id="peg-E2" class="peg-group">
+          <rect class="peg-body" x="8" y="158" width="30" height="24" rx="12"/>
+          <text class="peg-text" x="23" y="170">E2</text>
+        </g>
+        <g id="peg-A2" class="peg-group">
+          <rect class="peg-body" x="8" y="98" width="30" height="24" rx="12"/>
+          <text class="peg-text" x="23" y="110">A2</text>
+        </g>
+        <g id="peg-D3" class="peg-group">
+          <rect class="peg-body" x="8" y="53" width="30" height="24" rx="12"/>
+          <text class="peg-text" x="23" y="65">D3</text>
+        </g>
+
+        <!-- Right Pegs (G3, B3, E4) -->
+        <g id="peg-G3" class="peg-group">
+          <rect class="peg-body" x="162" y="53" width="30" height="24" rx="12"/>
+          <text class="peg-text" x="177" y="65">G3</text>
+        </g>
+        <g id="peg-B3" class="peg-group">
+          <rect class="peg-body" x="162" y="98" width="30" height="24" rx="12"/>
+          <text class="peg-text" x="177" y="110">B3</text>
+        </g>
+        <g id="peg-E4" class="peg-group">
+          <rect class="peg-body" x="162" y="158" width="30" height="24" rx="12"/>
+          <text class="peg-text" x="177" y="170">E4</text>
+        </g>
+      </svg>
     </div>
   </div>
 
@@ -207,14 +240,6 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
-
-    // Tuning Presets
-    const TUNINGS = {
-      'guitar-std': ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'],
-      'guitar-dropd': ['D2', 'A2', 'D3', 'G3', 'B3', 'E4'],
-      'bass-std': ['E1', 'A1', 'D2', 'G2'],
-      'ukulele-std': ['G4', 'C4', 'E4', 'A4']
-    };
 
     let audioCtx;
     let analyser;
@@ -229,26 +254,6 @@
     const noteEl = document.getElementById('note');
     const freqEl = document.getElementById('frequency');
     const pointerEl = document.getElementById('pointer');
-    const tuningSelect = document.getElementById('tuning-select');
-    const stringContainer = document.getElementById('string-container');
-
-    // Render initial string buttons
-    renderStringButtons(TUNINGS[tuningSelect.value]);
-
-    tuningSelect.addEventListener('change', (e) => {
-      renderStringButtons(TUNINGS[e.target.value]);
-    });
-
-    function renderStringButtons(notes) {
-      stringContainer.innerHTML = '';
-      notes.forEach(note => {
-        const btn = document.createElement('div');
-        btn.className = 'string-btn';
-        btn.id = `s-${note}`;
-        btn.innerText = note;
-        stringContainer.appendChild(btn);
-      });
-    }
 
     startBtn.addEventListener('click', () => {
       if (!isListening) {
@@ -367,7 +372,10 @@
         pointerEl.style.left = `${meterPercentage}%`;
 
         clearActiveStrings();
-        let targetString = document.getElementById(`s-${fullNote}`);
+        let targetPeg = document.getElementById(`peg-${fullNote}`);
+        let targetString = document.getElementById(`str-${fullNote}`);
+        
+        if (targetPeg) targetPeg.classList.add('active');
         if (targetString) targetString.classList.add('active');
 
         if (Math.abs(cents) <= 4) {
@@ -386,7 +394,8 @@
     }
 
     function clearActiveStrings() {
-      document.querySelectorAll('.string-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.peg-group').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.string-line').forEach(s => s.classList.remove('active'));
     }
   </script>
 </body>
