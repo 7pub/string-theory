@@ -1,16 +1,16 @@
 {
-  "name": "Guitar Pitch Tuner",
-  "short_name": "Tuner",
+  "name": "String Theory Tuner",
+  "short_name": "StringTheory",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#121212",
-  "description": "A real-time Progressive Web App guitar tuner using Web Audio API.",
+  "description": "Real-time guitar pitch tuner built with Web Audio API & PWA magic.",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3074/3074058.png",
+      "src": "icon.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
