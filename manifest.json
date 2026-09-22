@@ -1,0 +1,17 @@
+{
+  "name": "Guitar Pitch Tuner",
+  "short_name": "Tuner",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "description": "A real-time Progressive Web App guitar tuner using Web Audio API.",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3074/3074058.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
