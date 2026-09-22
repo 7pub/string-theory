@@ -22,10 +22,38 @@
     }
 
     header {
-      margin-top: 20px;
+      margin-top: 10px;
       text-align: center;
+      width: 100%;
+      max-width: 400px;
     }
-    header h1 { font-size: 1.5rem; color: #888; text-transform: uppercase; letter-spacing: 2px; }
+    header h1 { font-size: 1.4rem; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
+
+    /* Tuning Selector Dropdown */
+    .tuning-selector {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .tuning-selector select {
+      width: 100%;
+      padding: 12px 15px;
+      font-size: 1rem;
+      font-weight: bold;
+      background-color: #1a1a1a;
+      color: #00ff6b;
+      border: 2px solid #333;
+      border-radius: 12px;
+      outline: none;
+      cursor: pointer;
+      text-align: center;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .tuning-selector select:focus {
+      border-color: #00ff6b;
+    }
 
     .tuner-container {
       display: flex;
@@ -37,19 +65,19 @@
     }
 
     .note-display {
-      font-size: 6rem;
+      font-size: 5.5rem;
       font-weight: bold;
-      height: 120px;
-      line-height: 120px;
+      height: 110px;
+      line-height: 110px;
       color: #333;
       transition: color 0.2s ease;
     }
 
     .frequency-display {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: #666;
-      margin-top: 10px;
-      height: 30px;
+      margin-top: 5px;
+      height: 25px;
     }
 
     /* Gauge / Meter Visual */
@@ -59,7 +87,7 @@
       height: 10px;
       background-color: #222;
       border-radius: 5px;
-      margin: 40px 0 20px 0;
+      margin: 30px 0 20px 0;
       overflow: visible;
     }
 
@@ -94,12 +122,14 @@
     .meter-pointer.flat { background-color: #ff3b30; }
     .meter-pointer.sharp { background-color: #ffcc00; }
 
-    /* Standard Tuning Reference Buttons */
+    /* Dynamic String Buttons */
     .string-reference {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
+      gap: 10px;
       width: 100%;
-      margin-top: 20px;
+      margin-top: 15px;
+      flex-wrap: wrap;
     }
 
     .string-btn {
@@ -110,15 +140,17 @@
       background: #1a1a1a;
       color: #888;
       font-weight: bold;
-      font-size: 1rem;
+      font-size: 0.9rem;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.2s ease;
     }
 
     .string-btn.active {
       border-color: #00ff6b;
       color: #00ff6b;
+      box-shadow: 0 0 10px rgba(0, 255, 107, 0.4);
     }
 
     /* Control Button */
@@ -131,7 +163,7 @@
       font-weight: bold;
       border-radius: 30px;
       cursor: pointer;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       box-shadow: 0 4px 15px rgba(0, 255, 107, 0.3);
       transition: transform 0.1s;
     }
@@ -144,7 +176,15 @@
 <body>
 
   <header>
-    <h1>Guitar Pitch Tuner</h1>
+    <h1>String Theory Tuner</h1>
+    <div class="tuning-selector">
+      <select id="tuning-select">
+        <option value="guitar-std">Guitar: Standard (E A D G B E)</option>
+        <option value="guitar-dropd">Guitar: Drop D (D A D G B E)</option>
+        <option value="bass-std">Bass: Standard (E A D G)</option>
+        <option value="ukulele-std">Ukulele: Standard (G C E A)</option>
+      </select>
+    </div>
   </header>
 
   <div class="tuner-container">
@@ -156,32 +196,32 @@
       <div id="pointer" class="meter-pointer"></div>
     </div>
 
-    <div class="string-reference">
-      <div class="string-btn" id="s-E2">E2</div>
-      <div class="string-btn" id="s-A2">A2</div>
-      <div class="string-btn" id="s-D3">D3</div>
-      <div class="string-btn" id="s-G3">G3</div>
-      <div class="string-btn" id="s-B3">B3</div>
-      <div class="string-btn" id="s-E4">E4</div>
+    <div id="string-container" class="string-reference">
+      <!-- Buttons are generated dynamically based on selected instrument -->
     </div>
   </div>
 
   <button id="start-btn" class="btn-start">Start Tuner</button>
 
   <script>
-    // Register PWA Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
 
-    // Audio Context and Detection setup
+    // Tuning Presets
+    const TUNINGS = {
+      'guitar-std': ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'],
+      'guitar-dropd': ['D2', 'A2', 'D3', 'G3', 'B3', 'E4'],
+      'bass-std': ['E1', 'A1', 'D2', 'G2'],
+      'ukulele-std': ['G4', 'C4', 'E4', 'A4']
+    };
+
     let audioCtx;
     let analyser;
     let microphone;
     let isListening = false;
     const bufferLength = 2048;
     const buffer = new Float32Array(bufferLength);
-
     const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     
     // UI Elements
@@ -189,6 +229,26 @@
     const noteEl = document.getElementById('note');
     const freqEl = document.getElementById('frequency');
     const pointerEl = document.getElementById('pointer');
+    const tuningSelect = document.getElementById('tuning-select');
+    const stringContainer = document.getElementById('string-container');
+
+    // Render initial string buttons
+    renderStringButtons(TUNINGS[tuningSelect.value]);
+
+    tuningSelect.addEventListener('change', (e) => {
+      renderStringButtons(TUNINGS[e.target.value]);
+    });
+
+    function renderStringButtons(notes) {
+      stringContainer.innerHTML = '';
+      notes.forEach(note => {
+        const btn = document.createElement('div');
+        btn.className = 'string-btn';
+        btn.id = `s-${note}`;
+        btn.innerText = note;
+        stringContainer.appendChild(btn);
+      });
+    }
 
     startBtn.addEventListener('click', () => {
       if (!isListening) {
@@ -235,7 +295,6 @@
       clearActiveStrings();
     }
 
-    // Pitch Detection Engine (Autocorrelation method)
     function autoCorrelate(buf, sampleRate) {
       let SIZE = buf.length;
       let rms = 0;
@@ -246,7 +305,6 @@
       }
       rms = Math.sqrt(rms / SIZE);
 
-      // Signal threshold to eliminate noise
       if (rms < 0.01) return -1;
 
       let r1 = 0, r2 = SIZE - 1, thres = 0.2;
@@ -279,7 +337,6 @@
       }
       let T0 = maxpos;
 
-      // Parabolic interpolation for fine accuracy
       let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
       let a = (x1 + x3 - 2 * x2) / 2;
       let b = (x3 - x1) / 2;
@@ -305,13 +362,10 @@
         noteEl.innerText = noteName;
         freqEl.innerText = `${pitch.toFixed(1)} Hz`;
 
-        // Calculate pointer location (-50 cents to +50 cents)
-        // Map cents to meter position percentage (0% to 100%)
         let meterPercentage = 50 + (cents);
-        meterPercentage = Math.max(5, Math.min(95, meterPercentage)); // Clamp between 5% and 95%
+        meterPercentage = Math.max(5, Math.min(95, meterPercentage));
         pointerEl.style.left = `${meterPercentage}%`;
 
-        // Apply tuning state styles
         clearActiveStrings();
         let targetString = document.getElementById(`s-${fullNote}`);
         if (targetString) targetString.classList.add('active');
