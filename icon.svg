@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bg-grad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1e222d"/>
+      <stop offset="100%" stop-color="#0a0c10"/>
+    </radialGradient>
+
+    <!-- Glowing Accent Gradient -->
+    <linearGradient id="neon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ff6b"/>
+      <stop offset="100%" stop-color="#00b8ff"/>
+    </linearGradient>
+
+    <!-- Drop Shadow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- App Icon Base -->
+  <rect width="512" height="512" rx="112" fill="url(#bg-grad)"/>
+
+  <!-- Outer Ring Accent -->
+  <rect x="24" y="24" width="464" height="464" rx="88" fill="none" stroke="#2a303c" stroke-width="4"/>
+
+  <!-- Classical Headstock Body -->
+  <path d="M 180 430 L 180 190 C 180 110, 200 60, 256 60 C 312 60, 332 110, 332 190 L 332 430 Z" 
+        fill="#181a20" stroke="#2e3440" stroke-width="8"/>
+
+  <!-- Slotted Openings -->
+  <rect x="200" y="130" width="36" height="230" rx="18" fill="#0a0c10" stroke="#252a34" stroke-width="4"/>
+  <rect x="276" y="130" width="36" height="230" rx="18" fill="#0a0c10" stroke="#252a34" stroke-width="4"/>
+
+  <!-- Tuning Pegs (Left) -->
+  <rect x="120" y="150" width="48" height="28" rx="14" fill="#2e3440" stroke="#4c566a" stroke-width="4"/>
+  <rect x="120" y="230" width="48" height="28" rx="14" fill="#2e3440" stroke="#4c566a" stroke-width="4"/>
+  <rect x="120" y="310" width="48" height="28" rx="14" fill="#2e3440" stroke="#4c566a" stroke-width="4"/>
+
+  <!-- Tuning Pegs (Right) -->
+  <rect x="344" y="150" width="48" height="28" rx="14" fill="#2e3440" stroke="#4c566a" stroke-width="4"/>
+  <rect x="344" y="230" width="48" height="28" rx="14" fill="#2e3440" stroke="#4c566a" stroke-width="4"/>
+  <rect x="344" y="310" width="48" height="28" rx="14" fill="#2e3440" stroke="#4c566a" stroke-width="4"/>
+
+  <!-- The "Theory" Wave String (Glowing Green/Cyan Sine Wave) -->
+  <path d="M 218 430 L 218 310 Q 218 290, 230 280 T 256 250 T 282 220 L 294 160" 
+        fill="none" stroke="url(#neon-grad)" stroke-width="10" stroke-linecap="round" filter="url(#glow)"/>
+
+  <!-- Secondary Straight Strings -->
+  <line x1="210" y1="430" x2="210" y2="330" stroke="#4c566a" stroke-width="4" opacity="0.6"/>
+  <line x1="226" y1="430" x2="226" y2="240" stroke="#4c566a" stroke-width="4" opacity="0.6"/>
+  <line x1="286" y1="430" x2="286" y2="240" stroke="#4c566a" stroke-width="4" opacity="0.6"/>
+  <line x1="294" y1="430" x2="294" y2="330" stroke="#4c566a" stroke-width="4" opacity="0.6"/>
+  <line x1="302" y1="430" x2="302" y2="370" stroke="#4c566a" stroke-width="4" opacity="0.6"/>
+
+  <!-- Nut at Base -->
+  <rect x="172" y="420" width="168" height="16" rx="4" fill="#e5e9f0"/>
+</svg>
