@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#121212">
+  <title>Guitar Pitch Tuner</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 100vh;
+      padding: 20px;
+      user-select: none;
+    }
+
+    header {
+      margin-top: 20px;
+      text-align: center;
+    }
+    header h1 { font-size: 1.5rem; color: #888; text-transform: uppercase; letter-spacing: 2px; }
+
+    .tuner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .note-display {
+      font-size: 6rem;
+      font-weight: bold;
+      height: 120px;
+      line-height: 120px;
+      color: #333;
+      transition: color 0.2s ease;
+    }
+
+    .frequency-display {
+      font-size: 1.2rem;
+      color: #666;
+      margin-top: 10px;
+      height: 30px;
+    }
+
+    /* Gauge / Meter Visual */
+    .meter {
+      position: relative;
+      width: 100%;
+      height: 10px;
+      background-color: #222;
+      border-radius: 5px;
+      margin: 40px 0 20px 0;
+      overflow: visible;
+    }
+
+    .meter-center {
+      position: absolute;
+      left: 50%;
+      top: -5px;
+      width: 2px;
+      height: 20px;
+      background-color: #00ff6b;
+      transform: translateX(-50%);
+    }
+
+    .meter-pointer {
+      position: absolute;
+      left: 50%;
+      top: -8px;
+      width: 16px;
+      height: 26px;
+      background-color: #888;
+      border-radius: 4px;
+      transform: translateX(-50%);
+      transition: left 0.1s ease-out, background-color 0.2s;
+    }
+
+    /* Status indicator colors */
+    .in-tune { color: #00ff6b !important; }
+    .flat { color: #ff3b30 !important; }
+    .sharp { color: #ffcc00 !important; }
+
+    .meter-pointer.in-tune { background-color: #00ff6b; }
+    .meter-pointer.flat { background-color: #ff3b30; }
+    .meter-pointer.sharp { background-color: #ffcc00; }
+
+    /* Standard Tuning Reference Buttons */
+    .string-reference {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .string-btn {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: 2px solid #333;
+      background: #1a1a1a;
+      color: #888;
+      font-weight: bold;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .string-btn.active {
+      border-color: #00ff6b;
+      color: #00ff6b;
+    }
+
+    /* Control Button */
+    .btn-start {
+      background-color: #00ff6b;
+      color: #000;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 15px rgba(0, 255, 107, 0.3);
+      transition: transform 0.1s;
+    }
+
+    .btn-start:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Guitar Pitch Tuner</h1>
+  </header>
+
+  <div class="tuner-container">
+    <div id="note" class="note-display">--</div>
+    <div id="frequency" class="frequency-display">Click Start to Tune</div>
+
+    <div class="meter">
+      <div class="meter-center"></div>
+      <div id="pointer" class="meter-pointer"></div>
+    </div>
+
+    <div class="string-reference">
+      <div class="string-btn" id="s-E2">E2</div>
+      <div class="string-btn" id="s-A2">A2</div>
+      <div class="string-btn" id="s-D3">D3</div>
+      <div class="string-btn" id="s-G3">G3</div>
+      <div class="string-btn" id="s-B3">B3</div>
+      <div class="string-btn" id="s-E4">E4</div>
+    </div>
+  </div>
+
+  <button id="start-btn" class="btn-start">Start Tuner</button>
+
+  <script>
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    // Audio Context and Detection setup
+    let audioCtx;
+    let analyser;
+    let microphone;
+    let isListening = false;
+    const bufferLength = 2048;
+    const buffer = new Float32Array(bufferLength);
+
+    const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    
+    // UI Elements
+    const startBtn = document.getElementById('start-btn');
+    const noteEl = document.getElementById('note');
+    const freqEl = document.getElementById('frequency');
+    const pointerEl = document.getElementById('pointer');
+
+    startBtn.addEventListener('click', () => {
+      if (!isListening) {
+        initAudio();
+      } else {
+        stopAudio();
+      }
+    });
+
+    async function initAudio() {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        
+        microphone = audioCtx.createMediaStreamSource(stream);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = bufferLength;
+        
+        microphone.connect(analyser);
+        
+        isListening = true;
+        startBtn.innerText = "Stop";
+        startBtn.style.backgroundColor = "#ff3b30";
+        startBtn.style.color = "#fff";
+        
+        updatePitch();
+      } catch (err) {
+        alert("Microphone access is required to use the tuner.");
+        console.error(err);
+      }
+    }
+
+    function stopAudio() {
+      if (audioCtx) audioCtx.close();
+      isListening = false;
+      startBtn.innerText = "Start Tuner";
+      startBtn.style.backgroundColor = "#00ff6b";
+      startBtn.style.color = "#000";
+      noteEl.innerText = "--";
+      noteEl.className = "note-display";
+      freqEl.innerText = "Click Start to Tune";
+      pointerEl.style.left = "50%";
+      pointerEl.className = "meter-pointer";
+      clearActiveStrings();
+    }
+
+    // Pitch Detection Engine (Autocorrelation method)
+    function autoCorrelate(buf, sampleRate) {
+      let SIZE = buf.length;
+      let rms = 0;
+
+      for (let i = 0; i < SIZE; i++) {
+        let val = buf[i];
+        rms += val * val;
+      }
+      rms = Math.sqrt(rms / SIZE);
+
+      // Signal threshold to eliminate noise
+      if (rms < 0.01) return -1;
+
+      let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+      for (let i = 0; i < SIZE / 2; i++) {
+        if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+      }
+      for (let i = 1; i < SIZE / 2; i++) {
+        if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+      }
+
+      buf = buf.slice(r1, r2);
+      SIZE = buf.length;
+
+      let c = new Array(SIZE).fill(0);
+      for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE - i; j++) {
+          c[i] = c[i] + buf[j] * buf[j + i];
+        }
+      }
+
+      let d = 0;
+      while (c[d] > c[d + 1]) d++;
+      let maxval = -1, maxpos = -1;
+
+      for (let i = d; i < SIZE; i++) {
+        if (c[i] > maxval) {
+          maxval = c[i];
+          maxpos = i;
+        }
+      }
+      let T0 = maxpos;
+
+      // Parabolic interpolation for fine accuracy
+      let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+      let a = (x1 + x3 - 2 * x2) / 2;
+      let b = (x3 - x1) / 2;
+      if (a) T0 = T0 - b / (2 * a);
+
+      return sampleRate / T0;
+    }
+
+    function updatePitch() {
+      if (!isListening) return;
+
+      analyser.getFloatTimeDomainData(buffer);
+      const pitch = autoCorrelate(buffer, audioCtx.sampleRate);
+
+      if (pitch !== -1) {
+        const noteNum = 12 * (Math.log(pitch / 440) / Math.log(2)) + 69;
+        const roundedNote = Math.round(noteNum);
+        const cents = Math.floor((noteNum - roundedNote) * 100);
+        const noteName = noteNames[roundedNote % 12];
+        const octave = Math.floor(roundedNote / 12) - 1;
+        const fullNote = noteName + octave;
+
+        noteEl.innerText = noteName;
+        freqEl.innerText = `${pitch.toFixed(1)} Hz`;
+
+        // Calculate pointer location (-50 cents to +50 cents)
+        // Map cents to meter position percentage (0% to 100%)
+        let meterPercentage = 50 + (cents);
+        meterPercentage = Math.max(5, Math.min(95, meterPercentage)); // Clamp between 5% and 95%
+        pointerEl.style.left = `${meterPercentage}%`;
+
+        // Apply tuning state styles
+        clearActiveStrings();
+        let targetString = document.getElementById(`s-${fullNote}`);
+        if (targetString) targetString.classList.add('active');
+
+        if (Math.abs(cents) <= 4) {
+          noteEl.className = "note-display in-tune";
+          pointerEl.className = "meter-pointer in-tune";
+        } else if (cents < 0) {
+          noteEl.className = "note-display flat";
+          pointerEl.className = "meter-pointer flat";
+        } else {
+          noteEl.className = "note-display sharp";
+          pointerEl.className = "meter-pointer sharp";
+        }
+      }
+
+      requestAnimationFrame(updatePitch);
+    }
+
+    function clearActiveStrings() {
+      document.querySelectorAll('.string-btn').forEach(btn => btn.classList.remove('active'));
+    }
+  </script>
+</body>
+</html>
